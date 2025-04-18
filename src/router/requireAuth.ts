@@ -1,5 +1,5 @@
 import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
-import { useAuthStore } from '@/stores/authStore'
+import { useAuthStore } from '@/store/authStore'
 
 export function requireAuth(
   to: RouteLocationNormalized,

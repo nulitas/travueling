@@ -113,7 +113,7 @@ import {
   XIcon,
 } from 'lucide-vue-next'
 import ConfirmationModal from './ConfirmationModal.vue'
-import { useAuthStore } from '@/stores/authStore'
+import { useAuthStore } from '@/store/authStore'
 
 const route = useRoute()
 const router = useRouter()

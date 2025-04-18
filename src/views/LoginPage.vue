@@ -99,8 +99,8 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Mail, Lock, Loader2, Eye, EyeOff, Globe } from 'lucide-vue-next'
 
-import { useAuthStore } from '@/stores/authStore'
-import { useLogin } from '@/composables/useLogin'
+import { useAuthStore } from '@/store/authStore'
+import { useAuth } from '@/composables/useAuth'
 
 const identifier = ref('')
 const password = ref('')
@@ -108,7 +108,7 @@ const showPassword = ref(false)
 
 const router = useRouter()
 const authStore = useAuthStore()
-const { login, isLoading } = useLogin()
+const { login, isLoading } = useAuth()
 
 onMounted(() => {
   if (authStore.isAuthenticated || localStorage.getItem('authToken')) {

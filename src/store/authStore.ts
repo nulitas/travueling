@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import type { LoginResponse, User } from '@/types/auth'
+import { getCurrentUser } from '@/services/authApi'
 
 interface AuthState {
   user: User | null
@@ -26,6 +27,16 @@ export const useAuthStore = defineStore('auth', {
       this.token = null
       localStorage.removeItem('authUser')
       localStorage.removeItem('authToken')
+    },
+    async fetchCurrentUser() {
+      try {
+        const user = await getCurrentUser()
+        this.user = user
+        localStorage.setItem('authUser', JSON.stringify(user))
+      } catch (error) {
+        console.error('Failed to fetch current user:', error)
+        this.logout()
+      }
     },
   },
 })

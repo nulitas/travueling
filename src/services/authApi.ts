@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { LoginResponse } from '@/types/auth'
+import type { LoginResponse, User } from '@/types/auth'
 
 export const loginUser = async (identifier: string, password: string): Promise<LoginResponse> => {
   const response = await axios.post('/api/auth/local', {
@@ -8,4 +8,9 @@ export const loginUser = async (identifier: string, password: string): Promise<L
   })
 
   return response.data as LoginResponse
+}
+
+export const getCurrentUser = async (): Promise<User> => {
+  const response = await axios.get('/api/users/me')
+  return response.data
 }

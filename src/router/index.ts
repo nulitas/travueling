@@ -6,7 +6,7 @@ import NotFound from '@/views/NotFound.vue'
 import Login from '@/views/LoginPage.vue'
 import LayoutPage from '@/components/LayoutPage.vue'
 import ArticlesPage from '@/views/Articles/ArticlesPage.vue'
-
+import ProfilePage from '@/views/ProfilePage.vue'
 const routes = [
   {
     path: '/',
@@ -29,6 +29,12 @@ const routes = [
             path: 'articles',
             name: 'Articles',
             component: ArticlesPage,
+            beforeEnter: requireAuth,
+          },
+          {
+            path: 'profile',
+            name: 'Profile',
+            component: ProfilePage,
             beforeEnter: requireAuth,
           },
         ],

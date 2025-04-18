@@ -7,6 +7,8 @@ import Login from '@/views/LoginPage.vue'
 import LayoutPage from '@/components/LayoutPage.vue'
 import ArticlesPage from '@/views/Articles/ArticlesPage.vue'
 import ProfilePage from '@/views/ProfilePage.vue'
+import CategoryPage from '../views/CategoryPage.vue'
+
 const routes = [
   {
     path: '/',
@@ -35,6 +37,12 @@ const routes = [
             path: 'profile',
             name: 'Profile',
             component: ProfilePage,
+            beforeEnter: requireAuth,
+          },
+          {
+            path: 'category',
+            name: 'Category',
+            component: CategoryPage,
             beforeEnter: requireAuth,
           },
         ],

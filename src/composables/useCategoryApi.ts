@@ -44,6 +44,7 @@ export const useCategoryApi = () => {
 
   const createCategory = async (categoryData: CreateCategoryRequest) => {
     try {
+      // Match the exact React implementation format
       const response = await apiClient.post<Category>('/categories', categoryData)
       return response.data
     } catch (err) {

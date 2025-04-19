@@ -17,7 +17,8 @@
     </div>
 
     <div v-else-if="error" class="text-red-600 bg-red-50 p-4 rounded-lg">
-      Error loading categories.
+      <p class="font-medium">Error loading categories</p>
+      <p class="text-sm mt-1">{{ getErrorMessage(error) }}</p>
     </div>
 
     <div v-else-if="isCreating || editingCategory">
@@ -45,7 +46,7 @@
       <div class="space-y-2">
         <div
           v-for="category in categories"
-          :key="category.id"
+          :key="category.documentId || category.id"
           class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg"
         >
           <span class="text-sm font-medium text-gray-900">{{ category.name }}</span>
@@ -62,7 +63,7 @@
               class="p-1 text-gray-400 hover:text-red-600 rounded-full hover:bg-red-50"
             >
               <Loader2
-                v-if="isDeleting && categoryToDelete?.id === category.id"
+                v-if="isDeleting && isCategoryBeingDeleted(category)"
                 class="w-4 h-4 animate-spin"
               />
               <Trash2 v-else class="w-4 h-4" />
@@ -86,6 +87,7 @@ import { useCategoryApi } from '@/composables/useCategoryApi'
 import CategoryForm from '@/components/CategoryForm.vue'
 import DeleteConfirmationModal from '@/components/ConfirmationModal.vue'
 import type { Category } from '@/types/category'
+import axios from 'axios'
 
 import { Pencil, Trash2, Plus, Loader2 } from 'lucide-vue-next'
 
@@ -104,17 +106,30 @@ const editingCategory = ref<Category | null>(null)
 const categoryToDelete = ref<Category | null>(null)
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
+const apiError = ref<string | null>(null)
 
-onMounted(() => {
-  getCategories()
+onMounted(async () => {
+  try {
+    await getCategories()
+  } catch (err) {
+    console.error('Failed to load categories:', err)
+
+    if (axios.isAxiosError(err) && err.response?.status === 401) {
+      apiError.value = 'Authentication required. Please log in.'
+    }
+  }
 })
 
 const handleSubmit = async (name: string) => {
   isSubmitting.value = true
+  apiError.value = null
+
   try {
     if (editingCategory.value) {
+      const id = editingCategory.value.documentId || editingCategory.value.id
+
       await updateCategory({
-        id: editingCategory.value.documentId,
+        id,
         data: { name },
       })
     } else {
@@ -122,6 +137,11 @@ const handleSubmit = async (name: string) => {
     }
     await getCategories()
     resetForm()
+  } catch (err) {
+    console.error('Operation failed:', err)
+    if (axios.isAxiosError(err)) {
+      apiError.value = getErrorMessage(err)
+    }
   } finally {
     isSubmitting.value = false
   }
@@ -130,6 +150,7 @@ const handleSubmit = async (name: string) => {
 const resetForm = () => {
   isCreating.value = false
   editingCategory.value = null
+  apiError.value = null
 }
 
 const editCategory = (category: Category) => {
@@ -143,12 +164,47 @@ const confirmDelete = (category: Category) => {
 const handleDelete = async () => {
   if (!categoryToDelete.value) return
   isDeleting.value = true
+  apiError.value = null
+
   try {
-    await deleteCategory(categoryToDelete.value.documentId)
+    const id = categoryToDelete.value.documentId || categoryToDelete.value.id
+    await deleteCategory(id)
     await getCategories()
     categoryToDelete.value = null
+  } catch (err) {
+    console.error('Delete failed:', err)
+    if (axios.isAxiosError(err)) {
+      apiError.value = getErrorMessage(err)
+    }
   } finally {
     isDeleting.value = false
   }
+}
+
+const isCategoryBeingDeleted = (category: Category) => {
+  if (!categoryToDelete.value) return false
+
+  return (
+    category.id === categoryToDelete.value.id ||
+    category.documentId === categoryToDelete.value.documentId
+  )
+}
+
+const getErrorMessage = (err: unknown): string => {
+  if (axios.isAxiosError(err)) {
+    if (err.response?.status === 401) {
+      return 'Authentication required. Please log in.'
+    }
+
+    if (err.response?.data?.message) {
+      return err.response.data.message
+    }
+
+    if (err.response?.status) {
+      return `API Error (${err.response.status}): ${err.message}`
+    }
+  }
+
+  return err instanceof Error ? err.message : 'An unknown error occurred'
 }
 </script>

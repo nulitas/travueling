@@ -1,5 +1,5 @@
 import { ref, watch } from 'vue'
-import { useArticleApi } from '@/services/articleApi'
+import { useArticleApi } from '@/composables/useArticleApi'
 import type { Article } from '@/types/article'
 
 export const useArticles = (categoryId = ref<number | null>(null)) => {

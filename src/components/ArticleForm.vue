@@ -74,7 +74,10 @@
 
 <script setup lang="ts">
 import { reactive } from 'vue'
-import type { ArticleFormData, Category, Article } from '@/types/article'
+import type { ArticleFormData } from '@/types/article'
+
+import type { Article } from '@/types/article'
+import type { Category } from '@/types/category'
 
 const props = defineProps<{
   initialData?: Article

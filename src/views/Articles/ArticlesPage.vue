@@ -102,7 +102,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useArticles } from '@/composables/useArticles'
-import { useCategoryApi } from '@/services/categoryApi'
+import { useCategoryApi } from '@/composables/useCategoryApi'
 import ArticleCard from '@/components/ArticleCard.vue'
 import { Search, Filter, BookOpen, Settings } from 'lucide-vue-next'
 
@@ -110,19 +110,20 @@ const searchQuery = ref('')
 const selectedCategory = ref<number | null>(null)
 const observerTarget = ref<HTMLElement | null>(null)
 
-const { categories } = useCategoryApi()
+const { categories, getCategories } = useCategoryApi()
 
 const { articles, loadMore, hasMore, isFetching } = useArticles(selectedCategory)
 
 const filteredArticles = computed(() => {
-  return articles.value.filter((article) =>
+  return articles.value.filter((article: { title: string }) =>
     article.title.toLowerCase().includes(searchQuery.value.toLowerCase()),
   )
 })
 
 let observer: IntersectionObserver | null = null
 
-onMounted(() => {
+onMounted(async () => {
+  await getCategories()
   console.log('categories:', categories.value)
   console.log('articles:', articles.value)
 

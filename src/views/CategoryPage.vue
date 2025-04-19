@@ -72,12 +72,6 @@
         </div>
       </div>
     </div>
-
-    <DeleteConfirmationModal
-      :isOpen="!!categoryToDelete"
-      @close="categoryToDelete = null"
-      @confirm="handleDelete"
-    />
   </div>
 </template>
 
@@ -85,10 +79,8 @@
 import { ref, onMounted } from 'vue'
 import { useCategoryApi } from '@/composables/useCategoryApi'
 import CategoryForm from '@/components/CategoryForm.vue'
-import DeleteConfirmationModal from '@/components/ConfirmationModal.vue'
 import type { Category } from '@/types/category'
 import axios from 'axios'
-
 import { Pencil, Trash2, Plus, Loader2 } from 'lucide-vue-next'
 
 const {
@@ -102,21 +94,17 @@ const {
 } = useCategoryApi()
 
 const isCreating = ref(false)
-const editingCategory = ref<Category | null>(null)
-const categoryToDelete = ref<Category | null>(null)
+const editingCategory = ref<Category | undefined>()
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
+const deletingCategoryId = ref<string | null>(null)
 const apiError = ref<string | null>(null)
 
 onMounted(async () => {
   try {
     await getCategories()
   } catch (err) {
-    console.error('Failed to load categories:', err)
-
-    if (axios.isAxiosError(err) && err.response?.status === 401) {
-      apiError.value = 'Authentication required. Please log in.'
-    }
+    handleError(err, 'Failed to load categories:')
   }
 })
 
@@ -126,85 +114,73 @@ const handleSubmit = async (name: string) => {
 
   try {
     if (editingCategory.value) {
-      const id = editingCategory.value.documentId || editingCategory.value.id
+      const id = getCategoryId(editingCategory.value)
 
       await updateCategory({
         id,
         data: { name },
       })
     } else {
-      await createCategory({ name })
+      await createCategory({
+        name,
+      })
     }
     await getCategories()
     resetForm()
   } catch (err) {
-    console.error('Operation failed:', err)
-    if (axios.isAxiosError(err)) {
-      apiError.value = getErrorMessage(err)
-    }
+    handleError(err, 'Operation failed:')
   } finally {
     isSubmitting.value = false
   }
 }
 
-const resetForm = () => {
-  isCreating.value = false
-  editingCategory.value = null
+const confirmDelete = async (category: Category) => {
+  if (!window.confirm(`Delete category "${category.name}"?`)) return
+
+  isDeleting.value = true
   apiError.value = null
+  const id = getCategoryId(category)
+  deletingCategoryId.value = id
+
+  try {
+    await deleteCategory(id)
+    await getCategories()
+  } catch (err) {
+    handleError(err, 'Delete failed:')
+  } finally {
+    isDeleting.value = false
+    deletingCategoryId.value = null
+  }
 }
+
+const getCategoryId = (category: Category): string => category.documentId || category.id.toString()
+
+const isCategoryBeingDeleted = (category: Category) =>
+  deletingCategoryId.value === getCategoryId(category)
 
 const editCategory = (category: Category) => {
   editingCategory.value = category
 }
 
-const confirmDelete = (category: Category) => {
-  categoryToDelete.value = category
-}
-
-const handleDelete = async () => {
-  if (!categoryToDelete.value) return
-  isDeleting.value = true
+const resetForm = () => {
+  isCreating.value = false
+  editingCategory.value = undefined
   apiError.value = null
-
-  try {
-    const id = categoryToDelete.value.documentId || categoryToDelete.value.id
-    await deleteCategory(id)
-    await getCategories()
-    categoryToDelete.value = null
-  } catch (err) {
-    console.error('Delete failed:', err)
-    if (axios.isAxiosError(err)) {
-      apiError.value = getErrorMessage(err)
-    }
-  } finally {
-    isDeleting.value = false
-  }
 }
 
-const isCategoryBeingDeleted = (category: Category) => {
-  if (!categoryToDelete.value) return false
-
-  return (
-    category.id === categoryToDelete.value.id ||
-    category.documentId === categoryToDelete.value.documentId
-  )
+const handleError = (err: unknown, context: string) => {
+  console.error(context, err)
+  if (axios.isAxiosError(err)) {
+    apiError.value = getErrorMessage(err)
+  }
 }
 
 const getErrorMessage = (err: unknown): string => {
   if (axios.isAxiosError(err)) {
-    if (err.response?.status === 401) {
-      return 'Authentication required. Please log in.'
-    }
-
-    if (err.response?.data?.message) {
-      return err.response.data.message
-    }
-
-    if (err.response?.status) {
-      return `API Error (${err.response.status}): ${err.message}`
-    }
+    if (err.response?.status === 401) return 'Authentication required'
+    if (err.response?.data?.error?.message) return err.response.data.error.message
+    return err.message
   }
-
-  return err instanceof Error ? err.message : 'An unknown error occurred'
+  return err instanceof Error ? err.message : 'Unknown error occurred'
 }
 </script>

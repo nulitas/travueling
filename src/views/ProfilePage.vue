@@ -10,7 +10,7 @@
       </div>
       <h1 class="text-2xl font-bold text-gray-900">{{ user?.username }}</h1>
       <p class="text-sm text-gray-500 mt-1">
-        Member since {{ new Date(user?.createdAt).getFullYear() }}
+        Member since {{ new Date(user?.createdAt ?? '').getFullYear() }}
       </p>
     </div>
 
@@ -44,7 +44,7 @@
     </div>
 
     <div class="min-h-[400px]">
-      <DetailProfile v-if="activeTab === 'info'" :user="user" />
+      <DetailProfile v-if="activeTab === 'info' && user" :user="user" />
       <!-- <CommentedArticle v-else :user="user" /> -->
     </div>
   </div>
@@ -55,7 +55,6 @@ import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/store/authStore'
 import { UserIcon, MessageSquare } from 'lucide-vue-next'
 import DetailProfile from '@/components/ProfileDetail.vue'
-// import CommentedArticle from '@/components/ProfileComment.vue'
 
 const authStore = useAuthStore()
 

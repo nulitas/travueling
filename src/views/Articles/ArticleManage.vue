@@ -5,16 +5,17 @@ import { useArticleStore } from '@/store/articleStore'
 import { useAuthStore } from '@/store/authStore'
 import { useCategoryApi } from '@/composables/useCategoryApi'
 import ArticleForm from '@/components/ArticleForm.vue'
+import type { Article, ArticleFormData } from '@/types/article'
 
 const articleStore = useArticleStore()
 const userStore = useAuthStore()
-const categoryApi = useCategoryApi() // Destructure from composable
+const categoryApi = useCategoryApi()
 const articleApi = useArticleApi()
 
 const page = ref(1)
 const pageSize = ref(3)
 const isCreating = ref(false)
-const editingArticle = ref(null)
+const editingArticle = ref<Article | null>(null)
 
 const fetchArticles = async () => {
   await articleStore.fetchArticles({
@@ -22,15 +23,22 @@ const fetchArticles = async () => {
     pageSize: pageSize.value,
     userId: userStore.user?.id,
   })
-  console.log('Articles:', articleStore.articles)
 }
 
 onMounted(async () => {
   await fetchArticles()
-  await categoryApi.fetch()
-  console.log('Categories:', categoryApi.categories)
+  await categoryApi.getCategories()
 })
-const handleCreateArticle = async (formData) => {
+
+const handleSubmit = async (formData: ArticleFormData) => {
+  if (isCreating.value) {
+    await handleCreateArticle(formData)
+  } else {
+    await handleUpdateArticle(formData)
+  }
+}
+
+const handleCreateArticle = async (formData: ArticleFormData) => {
   try {
     await articleApi.createArticle({ data: formData })
     alert('Article created successfully')
@@ -41,7 +49,7 @@ const handleCreateArticle = async (formData) => {
   }
 }
 
-const handleUpdateArticle = async (formData) => {
+const handleUpdateArticle = async (formData: ArticleFormData) => {
   if (!editingArticle.value) return
   try {
     await articleApi.updateArticle({
@@ -51,16 +59,17 @@ const handleUpdateArticle = async (formData) => {
     alert('Article updated successfully')
     editingArticle.value = null
     await fetchArticles()
-  } catch {
+  } catch (err) {
+    console.error('Update error:', err)
     alert('Failed to update article')
   }
 }
 
-const handleDeleteArticle = async (article) => {
+const handleDeleteArticle = async (article: Article) => {
   const confirmed = confirm(`Delete article "${article.title}"?`)
   if (!confirmed) return
   try {
-    await articleApi.deleteArticle(article.documentId)
+    await articleApi.deleteArticle(article.id.toString())
     alert('Article deleted')
     await fetchArticles()
   } catch {
@@ -78,11 +87,11 @@ const handleDeleteArticle = async (article) => {
 
     <ArticleForm
       v-if="isCreating || editingArticle"
-      :initialData="editingArticle || undefined"
-      :categories="categoryStore.categories"
-      :isSubmitting="articleApi.loading"
-      :submitLabel="isCreating ? 'Create Article' : 'Save Changes'"
-      @submit="isCreating ? handleCreateArticle : handleUpdateArticle"
+      :initial-data="editingArticle || undefined"
+      :categories="categoryApi.categories?.value || []"
+      :is-submitting="articleApi.loading.value"
+      :submit-label="isCreating ? 'Create Article' : 'Save Changes'"
+      @submit="handleSubmit"
       @cancel="
         () => {
           isCreating = false

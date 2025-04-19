@@ -1,6 +1,6 @@
-// composables/useArticleApi.ts
 import { ref } from 'vue'
 import api from '@/api'
+
 import type {
   Article,
   ArticleDetails,

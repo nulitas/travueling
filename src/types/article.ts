@@ -47,7 +47,6 @@ export interface ArticlesResponse {
     }
   }
 }
-
 export interface CreateArticleRequest {
   data: {
     title: string
@@ -65,4 +64,11 @@ export interface UpdateArticleRequest {
     cover_image_url?: string
     category?: number | null
   }
+}
+
+export interface ArticleFormData {
+  title: string
+  description: string
+  cover_image_url: string
+  category: number | null
 }

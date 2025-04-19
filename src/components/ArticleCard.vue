@@ -48,6 +48,10 @@ const handleCardClick = () => {
   router.push(`/articles/${props.article.documentId}`)
 }
 
+console.log('Article category data:', {
+  articleId: props.article.id,
+  categoryData: props.article.category,
+})
 const onImageError = () => {
   imageUrl.value = '/no-image.png'
 }

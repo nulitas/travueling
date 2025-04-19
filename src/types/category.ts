@@ -18,16 +18,11 @@ export interface Category {
   updatedAt: string
   publishedAt: string
 }
-
 export interface CreateCategoryRequest {
-  data: {
-    name: string
-  }
+  name: string
 }
 
 export interface UpdateCategoryRequest {
   id: string
-  data: {
-    name: string
-  }
+  data: { name: string }
 }

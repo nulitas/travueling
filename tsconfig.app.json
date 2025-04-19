@@ -4,7 +4,8 @@
   "exclude": [
     "src/**/__tests__/*",
     "src/components/Navbar.vue",
-    "src/components/ProfileComment.vue"
+    "src/components/ProfileComment.vue",
+    "src/views/RegisterPage.vue"
   ],
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",

@@ -1,3 +1,56 @@
+<template>
+  <div class="max-w-3xl mx-auto p-4">
+    <div class="flex justify-between mb-8">
+      <h1 class="text-2xl font-bold text-gray-900">Your Articles</h1>
+      <button @click="isCreating = true" class="btn btn-primary">+ New Article</button>
+    </div>
+
+    <ArticleForm
+      v-if="isCreating || editingArticle"
+      :initial-data="editingArticle || undefined"
+      :categories="categoryApi.categories?.value || []"
+      :is-submitting="articleApi.loading.value"
+      :submit-label="isCreating ? 'Create Article' : 'Save Changes'"
+      @submit="handleSubmit"
+      @cancel="
+        () => {
+          isCreating = false
+          editingArticle = null
+        }
+      "
+    />
+
+    <template v-else>
+      <div v-if="articleStore.articles.length === 0" class="text-center py-12">
+        <p>No articles found</p>
+        <button class="btn btn-outline" @click="isCreating = true">Create Article</button>
+      </div>
+
+      <div v-else class="space-y-4">
+        <div
+          v-for="article in articleStore.articles"
+          :key="article.id"
+          class="p-4 bg-white rounded shadow"
+        >
+          <div class="flex justify-between">
+            <div>
+              <h3 class="font-semibold">{{ article.title }}</h3>
+              <p class="text-sm text-gray-600">{{ article.description }}</p>
+              <p class="text-xs text-gray-400">
+                Last updated: {{ new Date(article.updatedAt).toLocaleDateString() }}
+              </p>
+            </div>
+            <div class="space-x-2">
+              <button @click="editingArticle = article">Edit</button>
+              <button @click="handleDeleteArticle(article)">Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useArticleApi } from '@/composables/useArticleApi'
@@ -77,56 +130,3 @@ const handleDeleteArticle = async (article: Article) => {
   }
 }
 </script>
-
-<template>
-  <div class="max-w-3xl mx-auto p-4">
-    <div class="flex justify-between mb-8">
-      <h1 class="text-2xl font-bold text-gray-900">Your Articles</h1>
-      <button @click="isCreating = true" class="btn btn-primary">+ New Article</button>
-    </div>
-
-    <ArticleForm
-      v-if="isCreating || editingArticle"
-      :initial-data="editingArticle || undefined"
-      :categories="categoryApi.categories?.value || []"
-      :is-submitting="articleApi.loading.value"
-      :submit-label="isCreating ? 'Create Article' : 'Save Changes'"
-      @submit="handleSubmit"
-      @cancel="
-        () => {
-          isCreating = false
-          editingArticle = null
-        }
-      "
-    />
-
-    <template v-else>
-      <div v-if="articleStore.articles.length === 0" class="text-center py-12">
-        <p>No articles found</p>
-        <button class="btn btn-outline" @click="isCreating = true">Create Article</button>
-      </div>
-
-      <div v-else class="space-y-4">
-        <div
-          v-for="article in articleStore.articles"
-          :key="article.id"
-          class="p-4 bg-white rounded shadow"
-        >
-          <div class="flex justify-between">
-            <div>
-              <h3 class="font-semibold">{{ article.title }}</h3>
-              <p class="text-sm text-gray-600">{{ article.description }}</p>
-              <p class="text-xs text-gray-400">
-                Last updated: {{ new Date(article.updatedAt).toLocaleDateString() }}
-              </p>
-            </div>
-            <div class="space-x-2">
-              <button @click="editingArticle = article">Edit</button>
-              <button @click="handleDeleteArticle(article)">Delete</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </template>
-  </div>
-</template>

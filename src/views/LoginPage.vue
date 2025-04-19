@@ -82,12 +82,12 @@
           </form>
 
           <!-- Footer -->
-          <div class="mt-6 text-center">
+          <!-- <div class="mt-6 text-center">
             <RouterLink to="/register" class="text-sm text-gray-600 hover:text-gray-900">
               Don't have an account?
               <span class="font-semibold">Create one</span>
             </RouterLink>
-          </div>
+          </div> -->
         </div>
       </div>
     </div>

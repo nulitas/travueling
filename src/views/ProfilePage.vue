@@ -28,18 +28,6 @@
           <UserIcon class="w-4 h-4" />
           Profile Information
         </button>
-        <button
-          @click="activeTab = 'comments'"
-          :class="[
-            'py-4 px-1 inline-flex items-center gap-2 border-b-2 font-medium text-sm',
-            activeTab === 'comments'
-              ? 'border-gray-900 text-gray-900'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-          ]"
-        >
-          <MessageSquare class="w-4 h-4" />
-          Comments
-        </button>
       </nav>
     </div>
 
@@ -53,7 +41,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/store/authStore'
-import { UserIcon, MessageSquare } from 'lucide-vue-next'
+import { UserIcon } from 'lucide-vue-next'
 import DetailProfile from '@/components/ProfileDetail.vue'
 
 const authStore = useAuthStore()

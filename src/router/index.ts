@@ -6,6 +6,7 @@ import NotFound from '@/views/NotFound.vue'
 import Login from '@/views/LoginPage.vue'
 import LayoutPage from '@/components/LayoutPage.vue'
 import ArticlesPage from '@/views/Articles/ArticlesPage.vue'
+import ArticleManage from '../views/Articles/ArticleManage.vue'
 import ProfilePage from '@/views/ProfilePage.vue'
 import CategoryPage from '../views/CategoryPage.vue'
 
@@ -32,6 +33,13 @@ const routes = [
             name: 'Articles',
             component: ArticlesPage,
             beforeEnter: requireAuth,
+          },
+          {
+            path: 'articles/manage',
+            name: 'ArticleManage',
+            component: ArticleManage,
+            beforeEnter: requireAuth,
+            props: true,
           },
           {
             path: 'profile',

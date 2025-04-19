@@ -15,7 +15,6 @@ export const useAuthStore = defineStore('auth', {
 
   getters: {
     isAuthenticated: (state) => !!state.token,
-    currentUser: (state) => state.user,
   },
 
   actions: {
@@ -23,10 +22,10 @@ export const useAuthStore = defineStore('auth', {
       const token = localStorage.getItem('authToken')
       const user = localStorage.getItem('authUser')
 
-      if (token && user) {
+      if (token) {
         try {
           this.token = token
-          this.user = JSON.parse(user)
+          this.user = user ? JSON.parse(user) : null
         } catch (error) {
           console.error('Failed to parse stored auth data:', error)
           this.clearStorage()
@@ -37,24 +36,8 @@ export const useAuthStore = defineStore('auth', {
     setCredentials({ user, jwt }: LoginResponse) {
       this.user = user
       this.token = jwt
-
-      localStorage.setItem('authToken', jwt)
       localStorage.setItem('authUser', JSON.stringify(user))
-    },
-
-    async fetchCurrentUser() {
-      try {
-        if (!this.token) throw new Error('No authentication token found')
-
-        const user = await getCurrentUser()
-        this.user = user
-        localStorage.setItem('authUser', JSON.stringify(user))
-        return user
-      } catch (error) {
-        console.error('Failed to fetch current user:', error)
-        this.logout()
-        throw error
-      }
+      localStorage.setItem('authToken', jwt)
     },
 
     logout() {
@@ -66,6 +49,17 @@ export const useAuthStore = defineStore('auth', {
     clearStorage() {
       localStorage.removeItem('authUser')
       localStorage.removeItem('authToken')
+    },
+
+    async fetchCurrentUser() {
+      try {
+        const user = await getCurrentUser()
+        this.user = user
+        localStorage.setItem('authUser', JSON.stringify(user))
+      } catch (error) {
+        console.error('Failed to fetch current user:', error)
+        this.logout()
+      }
     },
   },
 })

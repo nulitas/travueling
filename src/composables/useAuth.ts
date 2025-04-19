@@ -1,19 +1,19 @@
 import { ref } from 'vue'
-import axios from 'axios'
 import api from '@/api'
 import type { LoginCredentials, LoginResponse, RegisterCredentials, User } from '@/types/auth'
 import { useAuthStore } from '@/store/authStore'
-
+import axios from 'axios'
 export const useAuth = () => {
-  const authStore = useAuthStore()
   const isLoading = ref(false)
-  const error = ref<Error | null>(null)
+  const error = ref<string | null>(null)
+  const authStore = useAuthStore()
 
-  const handleRequest = async <T>(fn: () => Promise<T>): Promise<T> => {
+  const handleAuthRequest = async <T>(fn: () => Promise<T>): Promise<T> => {
     error.value = null
     isLoading.value = true
     try {
-      return await fn()
+      const result = await fn()
+      return result
     } catch (err) {
       error.value = parseError(err)
       throw error.value
@@ -22,20 +22,18 @@ export const useAuth = () => {
     }
   }
 
-  const parseError = (err: unknown): Error => {
+  const parseError = (err: unknown): string => {
     if (axios.isAxiosError(err)) {
-      return new Error(
-        err.response?.data?.error?.message || err.message || 'An unexpected error occurred',
-      )
+      return err.response?.data?.error?.message || err.message || 'An unexpected error occurred'
     }
     if (err instanceof Error) {
-      return err
+      return err.message
     }
-    return new Error('Unknown error occurred')
+    return 'Unknown error occurred'
   }
 
   const login = async (credentials: LoginCredentials): Promise<LoginResponse> => {
-    return handleRequest(async () => {
+    return handleAuthRequest(async () => {
       const res = await api.post<LoginResponse>('/auth/local', credentials)
       authStore.setCredentials(res.data)
       return res.data
@@ -43,15 +41,15 @@ export const useAuth = () => {
   }
 
   const register = async (credentials: RegisterCredentials): Promise<LoginResponse> => {
-    return handleRequest(async () => {
+    return handleAuthRequest(async () => {
       const res = await api.post<LoginResponse>('/auth/local/register', credentials)
       authStore.setCredentials(res.data)
       return res.data
     })
   }
 
-  const getMe = async (): Promise<User> => {
-    return handleRequest(async () => {
+  const getMe = async (): Promise<User | undefined> => {
+    return handleAuthRequest(async () => {
       const res = await api.get<User>('/users/me')
       authStore.user = res.data
       return res.data

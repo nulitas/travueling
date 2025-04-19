@@ -98,7 +98,6 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Mail, Lock, Loader2, Eye, EyeOff, Globe } from 'lucide-vue-next'
-
 import { useAuthStore } from '@/store/authStore'
 import { useAuth } from '@/composables/useAuth'
 
@@ -108,24 +107,31 @@ const showPassword = ref(false)
 
 const router = useRouter()
 const authStore = useAuthStore()
-const { login, isLoading } = useAuth()
+const { login, isLoading, error } = useAuth()
 
 onMounted(() => {
-  if (authStore.isAuthenticated || localStorage.getItem('authToken')) {
+  authStore.initialize()
+
+  if (authStore.isAuthenticated) {
     router.push('/articles')
   }
 })
 
 const handleSubmit = async () => {
   try {
-    const userData = await login({ identifier: identifier.value, password: password.value })
-    authStore.setCredentials(userData)
+    await login({
+      identifier: identifier.value,
+      password: password.value,
+    })
+
+    await authStore.fetchCurrentUser()
+
     identifier.value = ''
     password.value = ''
+
     router.push('/articles')
-  } catch (err: unknown) {
-    console.error('Login failed:', err)
-    alert('Login failed. Please check your credentials and try again.')
+  } catch {
+    alert(error.value || 'Login failed. Please check your credentials.')
   }
 }
 </script>

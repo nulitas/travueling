@@ -9,7 +9,7 @@ import ArticlesPage from '@/views/Articles/ArticlesPage.vue'
 import ArticleManage from '../views/Articles/ArticleManage.vue'
 import ProfilePage from '@/views/ProfilePage.vue'
 import CategoryPage from '../views/CategoryPage.vue'
-
+import RegisterPage from '@/views/RegisterPage.vue'
 const routes = [
   {
     path: '/',
@@ -23,6 +23,11 @@ const routes = [
         path: 'login',
         name: 'Login',
         component: Login,
+      },
+      {
+        path: 'register',
+        name: 'Register',
+        component: RegisterPage,
       },
       {
         path: '',
@@ -41,6 +46,7 @@ const routes = [
             beforeEnter: requireAuth,
             props: true,
           },
+
           {
             path: 'profile',
             name: 'Profile',

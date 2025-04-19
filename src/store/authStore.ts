@@ -9,34 +9,63 @@ interface AuthState {
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
-    user: JSON.parse(localStorage.getItem('authUser') || 'null'),
-    token: JSON.parse(localStorage.getItem('authToken') || 'null'),
+    user: null,
+    token: null,
   }),
+
   getters: {
     isAuthenticated: (state) => !!state.token,
+    currentUser: (state) => state.user,
   },
+
   actions: {
+    initialize() {
+      const token = localStorage.getItem('authToken')
+      const user = localStorage.getItem('authUser')
+
+      if (token && user) {
+        try {
+          this.token = token
+          this.user = JSON.parse(user)
+        } catch (error) {
+          console.error('Failed to parse stored auth data:', error)
+          this.clearStorage()
+        }
+      }
+    },
+
     setCredentials({ user, jwt }: LoginResponse) {
       this.user = user
       this.token = jwt
+
+      localStorage.setItem('authToken', jwt)
       localStorage.setItem('authUser', JSON.stringify(user))
-      localStorage.setItem('authToken', JSON.stringify(jwt))
     },
-    logout() {
-      this.user = null
-      this.token = null
-      localStorage.removeItem('authUser')
-      localStorage.removeItem('authToken')
-    },
+
     async fetchCurrentUser() {
       try {
+        if (!this.token) throw new Error('No authentication token found')
+
         const user = await getCurrentUser()
         this.user = user
         localStorage.setItem('authUser', JSON.stringify(user))
+        return user
       } catch (error) {
         console.error('Failed to fetch current user:', error)
         this.logout()
+        throw error
       }
+    },
+
+    logout() {
+      this.user = null
+      this.token = null
+      this.clearStorage()
+    },
+
+    clearStorage() {
+      localStorage.removeItem('authUser')
+      localStorage.removeItem('authToken')
     },
   },
 })

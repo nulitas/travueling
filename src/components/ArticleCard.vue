@@ -1,6 +1,5 @@
 <template>
   <div
-    @click="handleCardClick"
     class="group cursor-pointer bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200"
   >
     <div v-if="article.cover_image_url" class="aspect-video relative overflow-hidden">
@@ -33,20 +32,14 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+
 import type { Article } from '@/types/article'
 
 const props = defineProps<{
   article: Article
 }>()
 
-const router = useRouter()
-
 const imageUrl = ref(props.article.cover_image_url || '/placeholder.svg')
-
-const handleCardClick = () => {
-  router.push(`/articles/${props.article.documentId}`)
-}
 
 console.log('Article category data:', {
   articleId: props.article.id,
